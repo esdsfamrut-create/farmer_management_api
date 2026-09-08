@@ -18,6 +18,8 @@ import org.springframework.data.jpa.domain.Specification;
 import com.famrut.farmer_management_api.dto.FarmerSearchCriteria;
 import com.famrut.farmer_management_api.entity.FarmerStatus;
 import org.springframework.transaction.annotation.Transactional;
+import com.famrut.farmer_management_api.dto.FarmerStatusRequest;
+import com.famrut.farmer_management_api.entity.FarmerStatus;
 
 
 @Service
@@ -161,4 +163,19 @@ public Farmer createFarmer(Farmer farmer) {
 
     return farmerRepository.save(farmer);
 }
+
+public FarmerResponse updateFarmerStatus(
+        Long id,
+        FarmerStatusRequest request) {
+
+    Farmer farmer = farmerRepository.findById(id)
+            .orElseThrow(() -> new FarmerNotFoundException(id));
+
+    farmer.setStatus(request.getStatus());
+
+    Farmer updatedFarmer = farmerRepository.save(farmer);
+
+    return farmerMapper.toResponse(updatedFarmer);
+}
+
 }

@@ -23,6 +23,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageImpl;
 import com.famrut.farmer_management_api.service.FarmerSearchService;
+import com.famrut.farmer_management_api.dto.FarmerStatusRequest;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 public class FarmerController{
@@ -50,8 +55,14 @@ public class FarmerController{
     }
 
     @PostMapping("/api/v1/farmers")
-    public FarmerResponse createFarmer(@Valid @RequestBody FarmerRequest request) {
-        return farmerService.createFarmer(request);
+    public ResponseEntity<FarmerResponse> createFarmer(
+            @Valid @RequestBody FarmerRequest request) {
+
+        FarmerResponse response = farmerService.createFarmer(request);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
     }
 
     @GetMapping("/api/v1/farmers/{id}")
@@ -68,8 +79,11 @@ public class FarmerController{
     }
 
     @DeleteMapping("/api/v1/farmers/{id}")
-    public void deleteFarmer(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteFarmer(@PathVariable Long id) {
+
         farmerService.deleteFarmer(id);
+
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/api/v1/farmers/search")
@@ -92,6 +106,12 @@ public class FarmerController{
 
 
 
-    
+    @PatchMapping("/api/v1/farmers/{id}/status")
+    public FarmerResponse updateFarmerStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody FarmerStatusRequest request) {
+
+        return farmerService.updateFarmerStatus(id, request);
+    }
    
 }
