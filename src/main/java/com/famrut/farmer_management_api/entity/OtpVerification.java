@@ -69,7 +69,7 @@ public class OtpVerification {
         return verifiedAt;
     }
 
-    public void setVerifiedAt(LocalDateTime expiresAt) {
+    public void setVerifiedAt(LocalDateTime verifiedAt) {
         this.verifiedAt = verifiedAt;
     }
 }
