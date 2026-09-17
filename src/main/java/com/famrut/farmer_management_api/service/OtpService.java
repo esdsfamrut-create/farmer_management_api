@@ -14,6 +14,8 @@ import com.famrut.farmer_management_api.dto.FarmerRegistrationRequest;
 import com.famrut.farmer_management_api.entity.FarmerStatus;
 import com.famrut.farmer_management_api.dto.AuthResponse;
 import com.famrut.farmer_management_api.service.JwtService;
+import com.famrut.farmer_management_api.service.RefreshTokenService;
+import com.famrut.farmer_management_api.entity.RefreshToken;
 
 @Service
 public class OtpService {
@@ -21,13 +23,15 @@ public class OtpService {
     private final FarmerRepository farmerRepository;
     private final OtpVerificationRepository otpVerificationRepository;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
       public OtpService(
         OtpVerificationRepository otpVerificationRepository,
-        FarmerRepository farmerRepository,JwtService jwtService) {
+        FarmerRepository farmerRepository,JwtService jwtService,RefreshTokenService refreshTokenService) {
 
     this.otpVerificationRepository = otpVerificationRepository;
     this.farmerRepository = farmerRepository;
     this.jwtService=jwtService;
+    this.refreshTokenService = refreshTokenService;
 }
 
     public void sendOtp(SendOtpRequest request) {
@@ -93,16 +97,21 @@ public class OtpService {
             return new AuthResponse(
                     "OTP verified. Farmer registration required.",
                     null,
-                    null
+                    null,null
             );
         }
 
         // Farmer exists → generate JWT
-        String token = jwtService.generateToken(farmer);
+       String accessToken =
+                jwtService.generateToken(farmer);
+
+        RefreshToken refreshToken =
+                refreshTokenService.createRefreshToken(farmer);
 
         return new AuthResponse(
                 "Login successful",
-                token,
+                accessToken,
+                refreshToken.getToken(),
                 farmer.getId()
         );
     }

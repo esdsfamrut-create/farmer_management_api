@@ -20,20 +20,25 @@ import com.famrut.farmer_management_api.entity.FarmerStatus;
 import org.springframework.transaction.annotation.Transactional;
 import com.famrut.farmer_management_api.dto.FarmerStatusRequest;
 import com.famrut.farmer_management_api.entity.FarmerStatus;
-
+import com.famrut.farmer_management_api.entity.Village;
+import com.famrut.farmer_management_api.exception.VillageNotFoundException;
+import com.famrut.farmer_management_api.repository.VillageRepository;
 
 @Service
 public class FarmerService {
 
     private final FarmerRepository farmerRepository;
     private final FarmerMapper farmerMapper;
+    private final VillageRepository villageRepository;
 
     public FarmerService(
             FarmerRepository farmerRepository,
-            FarmerMapper farmerMapper) {
+            FarmerMapper farmerMapper,
+            VillageRepository villageRepository) {
 
         this.farmerRepository = farmerRepository;
         this.farmerMapper = farmerMapper;
+        this.villageRepository = villageRepository;
     }
 
     // private final FarmerMapper farmerMapper;
@@ -45,6 +50,11 @@ public class FarmerService {
     public FarmerResponse createFarmer(FarmerRequest request) {
 
     Farmer farmer = farmerMapper.toEntity(request);
+    if (request.getVillageId() != null) {
+            Village village = villageRepository.findById(request.getVillageId())
+                    .orElseThrow(() -> new VillageNotFoundException(request.getVillageId()));
+                    farmer.setVillage(village);
+     }
 
     if (farmer.getStatus() == null) {
         farmer.setStatus(FarmerStatus.ACTIVE);
@@ -61,8 +71,13 @@ public class FarmerService {
             .map(farmerMapper::toResponse);
     }
 
-public Farmer getFarmerById(Long id) {
-    return farmerRepository.findById(id).orElseThrow(() -> new FarmerNotFoundException(id));
+public FarmerResponse getFarmerById(Long id) {
+    return farmerRepository.findById(id) .map(farmer -> {
+
+                return farmerMapper.toResponse(farmer);
+
+    
+            }).orElseThrow(() -> new FarmerNotFoundException(id));
 }
 
    public FarmerResponse updateFarmer(
@@ -73,7 +88,11 @@ public Farmer getFarmerById(Long id) {
             .map(farmer -> {
 
                 farmerMapper.updateEntity(request, farmer);
-
+                if (request.getVillageId() != null) {
+                            Village village = villageRepository.findById(request.getVillageId())
+                                    .orElseThrow(() -> new VillageNotFoundException(request.getVillageId()));
+                                    farmer.setVillage(village);
+                    }
                 Farmer updatedFarmer =
                         farmerRepository.save(farmer);
 

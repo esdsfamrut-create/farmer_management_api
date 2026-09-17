@@ -15,6 +15,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+
+import java.util.List;
+import com.famrut.farmer_management_api.service.JwtService;
+import com.famrut.farmer_management_api.dto.FarmerResponse;
+import com.famrut.farmer_management_api.entity.Farmer;
+import com.famrut.farmer_management_api.entity.FarmerStatus;
+import com.famrut.farmer_management_api.repository.FarmerRepository;
+
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -23,11 +32,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "farmer-management-api-secret-key-2026-change-this";
 
     private final SecretKey secretKey;
+      private final JwtService jwtService;
+      private final FarmerRepository farmerRepository;
 
-    public JwtAuthenticationFilter() {
+    public JwtAuthenticationFilter(JwtService jwtService, FarmerRepository farmerRepository) {
         this.secretKey = Keys.hmacShaKeyFor(
                 SECRET_KEY.getBytes(StandardCharsets.UTF_8)
         );
+        this.jwtService = jwtService;
+        this.farmerRepository = farmerRepository;
     }
 
     @Override
@@ -57,14 +70,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .parseSignedClaims(token)
                     .getPayload();
 
-            String farmerId = claims.getSubject();
+            String role = claims.get("role", String.class);
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            farmerId,
-                            null,
-                            null
-                    );
+           String farmerId =
+        jwtService.extractFarmerId(token);
+
+                Farmer farmer = farmerRepository
+                        .findById(Long.valueOf(farmerId))
+                        .orElse(null);
+
+                if (farmer == null ||
+                        farmer.getStatus() != FarmerStatus.ACTIVE) {
+
+                SecurityContextHolder.clearContext();
+
+                filterChain.doFilter(request, response);
+                return;
+                }
+
+                SimpleGrantedAuthority authority =
+                        new SimpleGrantedAuthority(
+                                "ROLE_" + role
+                        );
+
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                farmerId,
+                                null,
+                                List.of(authority)
+                        );
 
             SecurityContextHolder
                     .getContext()
