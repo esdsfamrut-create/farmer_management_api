@@ -1,6 +1,7 @@
 package com.famrut.farmer_management_api.service;
 
 import com.famrut.farmer_management_api.entity.Farmer;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
@@ -16,7 +17,7 @@ public class JwtService {
             "farmer-management-api-secret-key-2026-change-this";
 
     private static final long EXPIRATION_TIME =
-            1000 * 60 * 60; // 1 hour
+            1000 * 60 * 60;
 
     private final SecretKey secretKey;
 
@@ -30,17 +31,52 @@ public class JwtService {
 
         Date now = new Date();
 
-        Date expiration = new Date(
-                now.getTime() + EXPIRATION_TIME
-        );
+        Date expiration =
+                new Date(now.getTime() + EXPIRATION_TIME);
 
         return Jwts.builder()
                 .subject(String.valueOf(farmer.getId()))
                 .claim("phoneNumber", farmer.getPhoneNumber())
-                .claim("role", "FARMER")
+                .claim("role", farmer.getRole().name())
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public Claims extractClaims(String token) {
+
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public String extractFarmerId(String token) {
+
+        return extractClaims(token)
+                .getSubject();
+    }
+
+    public String extractRole(String token) {
+
+        return extractClaims(token)
+                .get("role", String.class);
+    }
+
+    public boolean isTokenValid(String token) {
+
+        try {
+
+            Claims claims = extractClaims(token);
+
+            return claims.getExpiration()
+                    .after(new Date());
+
+        } catch (Exception ex) {
+
+            return false;
+        }
     }
 }

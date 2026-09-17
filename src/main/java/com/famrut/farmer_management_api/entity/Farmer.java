@@ -7,7 +7,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
 import com.famrut.farmer_management_api.entity.FarmerStatus;
-
+import com.famrut.farmer_management_api.entity.FarmerRole;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 
 @Entity
 @Table(name = "farmers")
@@ -20,6 +23,12 @@ public class Farmer {
     private String phoneNumber;
     @Enumerated(EnumType.STRING)
     private FarmerStatus status;
+    @Enumerated(EnumType.STRING)
+    private FarmerRole role;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "village_id")
+    private Village village;
 
     // Getters and Setters
 
@@ -60,6 +69,21 @@ public class Farmer {
     }
     public void setStatus(FarmerStatus status) {
         this.status = status;
+    }
+
+    public FarmerRole getRole() {
+        return role;
+    }
+    public void setRole(FarmerRole role) {
+        this.role = role;
+    }
+
+    public Village getVillage() {
+        return village;
+    }
+
+    public void setVillage(Village village) {
+        this.village = village;
     }
     
 }

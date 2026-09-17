@@ -1,0 +1,52 @@
+@baseUrl = http://localhost:8080
+@phone = 9876543210
+
+### Health
+GET {{baseUrl}}/api/v1/health
+
+
+### Send OTP
+POST {{baseUrl}}/api/v1/auth/send-otp
+Content-Type: application/json
+
+{
+  "phoneNumber": "{{phone}}"
+}
+
+
+### Verify OTP
+POST {{baseUrl}}/api/v1/auth/verify-otp
+Content-Type: application/json
+
+{
+  "phoneNumber": "{{phone}}",
+  "otp": "PUT_OTP_HERE"
+}
+
+
+### Current farmer
+GET {{baseUrl}}/api/v1/farmers/me
+Authorization: Bearer PUT_ACCESS_TOKEN_HERE
+
+
+### List farmers - ADMIN
+GET {{baseUrl}}/api/v1/farmers
+Authorization: Bearer PUT_ADMIN_ACCESS_TOKEN_HERE
+
+
+### Refresh
+POST {{baseUrl}}/api/v1/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "PUT_REFRESH_TOKEN_HERE"
+}
+
+
+### Logout
+POST {{baseUrl}}/api/v1/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "PUT_REFRESH_TOKEN_HERE"
+}

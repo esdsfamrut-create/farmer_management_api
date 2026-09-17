@@ -14,6 +14,8 @@ public class FarmerRequest {
     @NotBlank(message = "Phone number is required")
     private String phoneNumber;
 
+    private Long villageId;
+
     public String getName() {
         return name;
     }
@@ -36,5 +38,13 @@ public class FarmerRequest {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public Long getVillageId() {
+        return villageId;
+    }
+
+    public void setVillageId(Long villageId) {
+        this.villageId = villageId;
     }
 }
